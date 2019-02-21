@@ -5,7 +5,7 @@ Created on Tue Jul 15 07:22:23 2014
 @author: steven.hill
 """
 import sys
-sys.path.append('g:\\Astronomy\Python Play')
+sys.path.append('f:\\Astronomy\Python Play')
 import matplotlib.pyplot as pl
 import pylab
 import numpy as np
@@ -23,7 +23,7 @@ Titan_20130612UT = scipy.fromfile(file="TitanAlbedo20130612UT.txt", dtype=float,
 Titan_20130612UT=scipy.reshape(Titan_20130612UT,[Titan_20130612UT.size/2,2])
 TitanRNG_20130612UT = scipy.fromfile(file="TitanRNGAlbedo20130612UT.txt", dtype=float, count=-1, sep='\t')    
 TitanRNG_20130612UT=scipy.reshape(TitanRNG_20130612UT,[TitanRNG_20130612UT.size/2,2])
-Titan_1996UT = scipy.fromfile(file="../PROJECT/TITANS.DAT", dtype=float, count=-1, sep='\t')    
+Titan_1996UT = scipy.fromfile(file="f:/Astronomy/Projects/Planets/Saturn/PROJECT/TITANS.DAT", dtype=float, count=-1, sep='\t')    
 Titan_1996UT=scipy.reshape(Titan_1996UT,[Titan_1996UT.size/2,2])
 Titan_1996UT[:,1]=Titan_1996UT[:,1]/Titan_1996UT[:,1].max()
 Titan_1996Smooth=pyasl.smooth(Titan_1996UT[:,1],9,'flat')
@@ -31,18 +31,18 @@ Titan_1996Smooth=pyasl.smooth(Titan_1996UT[:,1],9,'flat')
 Titan_1996SmoothWV=Titan_1996UT
 Titan_1996SmoothWV[:,1]=Titan_1996Smooth
 
-Titan7S_1996UT = scipy.fromfile(file="../PROJECT/TITAN7S.DAT", dtype=float, count=-1, sep='\t')    
+Titan7S_1996UT = scipy.fromfile(file="f:/Astronomy/Projects/Planets/Saturn/PROJECT/TITAN7S.DAT", dtype=float, count=-1, sep='\t')    
 Titan7S_1996UT=scipy.reshape(Titan7S_1996UT,[Titan7S_1996UT.size/2,2])
 Titan7S_1996UT[:,1]=Titan7S_1996UT[:,1]/Titan7S_1996UT[:,1].max()
-Titan7S_1996Smooth=pyasl.smooth(Titan7S_1996UT[:,1],9,'flat')
-Titan7S_1996SmoothWV=Titan7S_1996UT
+Titan7S_1996Smooth=pyasl.smooth(Titan7S_1996UT[:,1],9,'flat') #SMOOTHING IS WRONG!
+Titan7S_1996SmoothWV=Titan7S_1996UT                           #WAVELENGTH SHIFT!!!
 Titan7S_1996SmoothWV[:,1]=Titan7S_1996Smooth
 
 WVOffset=-25.0
 Titan_20130612UT[:,0]=Titan_20130612UT[:,0]+WVOffset
 TitanRNG_20130612UT[:,0]=TitanRNG_20130612UT[:,0]+WVOffset
 
-Titan_Karkoschka1993 = scipy.fromfile(file="../../Saturn/Spectral Data/Karkoschka/1993.tab.txt", dtype=float, count=-1, sep=" ")    
+Titan_Karkoschka1993 = scipy.fromfile(file="f:/Astronomy/Projects/Planets/Saturn/Spectral Data/Karkoschka/1993.tab.txt", dtype=float, count=-1, sep=" ")    
 Titan_Karkoschka1993=scipy.reshape(Titan_Karkoschka1993,[Titan_Karkoschka1993.size/8,8])
 
 Titan_KarkRef1993=np.zeros((Titan_Karkoschka1993.size/8,2))
@@ -132,19 +132,16 @@ BandName,BandStart,BandEnd,ContWidth,EW=ComputeEW1.ComputeEW1(TitanRNG_20130612U
 BandName,BandStart,BandEnd,ContWidth,EW=ComputeEW1.ComputeEW1(TitanRNG_20130612UT,"Titan",DateTime,"Target","O2 A band",7540.,7760.,20.,EWFN,True)
 BandName,BandStart,BandEnd,ContWidth,EW=ComputeEW1.ComputeEW1(TitanRNG_20130612UT,"Titan",DateTime,"Target","H2O Z band + CH4",7850.,8600.,40.,EWFN,True)
 
-
-
-pl.figure(figsize=(6.5, 1.5), dpi=150, facecolor="white")
+pl.figure(figsize=(8.0, 2.5), dpi=150, facecolor="white")
 
 pl.subplot(1, 1, 1)
 #Plot Layout Configuration
-x0=400
+x0=375
 x1=950
-
-xtks=23
+xtks=24
 y0=0.0
-y1=0.4
-ytks=5
+y1=0.5
+ytks=6
 
 # Set x limits
 pl.xlim(x0,x1)
@@ -184,8 +181,32 @@ pl.plot((Titan7S_1996UT[:,0]-7.)/10.,Titan7S_1996Smooth*0.40,label='Titan_1996UT
 
 pl.plot(Titan_KarkRef1993[:,0]/10.,Titan_KarkRef1993[:,1],label='Karkoschka, 1994',linewidth=1,color='0.5')
 
-pl.legend(loc=0,ncol=2, borderaxespad=0.,prop={'size':6})
-pl.subplots_adjust(left=0.06, bottom=0.25, right=0.98, top=0.88,
+LineWVs=np.array([543.0,576.0,  #H I Balmer
+                  597.0,619.0,668.0,683.0,705.0,725.0,
+                  790.0,842.0,862.0,889.0,
+                  
+                  646.0,750.0,760.0,825.0])                    #H I Balmer
+                  
+                  
+LineY=np.array([0.05,0.05,
+                0.05,0.05,0.05,0.05,0.05,0.0,
+                0.05,0.0,0.2,0.1,
+                
+                0.05,0.05,0.05,0.05])
+                                        #H I Paschen
+LineLabels=[r'$CH_4$',r'$CH_4$',
+            r'$CH_4$',r'$CH_4$',r'$CH_4$',r'$CH_4$',r'$CH_4$',r'$CH_4$',
+            r'$CH_4$',r'$CH_4$',r'$CH_4$',r'$CH_4$',
+            
+            r'$NH_3$',r'$NH_3$',r'$NH_3$',r'$NH_3$',r'$NH_3$',r'$NH_3$']
+
+for l in range(0,LineWVs.size):                
+    pl.text(LineWVs[l],LineY[l],LineWVs[l].astype('|S5')+' '+LineLabels[l],fontsize=8,
+            verticalalignment='bottom',horizontalalignment='center',
+            rotation='vertical')
+
+pl.legend(loc=0,ncol=3, borderaxespad=0.,prop={'size':7})
+pl.subplots_adjust(left=0.06, bottom=0.20, right=0.98, top=0.88,
                 wspace=None, hspace=None)
                 
 pylab.savefig('TitanAlbedoAllYears.png',dpi=300)

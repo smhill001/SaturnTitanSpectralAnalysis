@@ -3,9 +3,73 @@
 Created on Tue Jul 15 07:22:23 2014
 
 @author: steven.hill
+
+FUNCTION: TitanSpectrum20130612UT.py
+
+This function reads 1D spectral data from text files created in RSpect from 
+FITS image finles that have been calibrated (bias, dark, but not necessarily 
+flat). A 
+linear wavelength calibration is applied and the resulting 1-dimensional spectrum
+is re-gridded to standard 0.5nm wavelength intervals. Using reference spectra
+(either instrument response functions or reference stellar spectra) the data
+are converted to either Top of Atmosphere 'raw' fluxes or the relative 
+(peak normalized to unity) response of the instrument. In addition, the
+equivalent widths of lines or bands of interest are computed and written
+to ASCII output files.
+
+INPUT PARAMETERS:
+    Target - This string identifies the target, e.g., "Jupiter", "Vega", etc.
+             This parameter allows the lookup of the target type, e.g.,
+             "Planet", "Star", etc. that permits construction of directory
+             paths.
+    DateUT - The UT date of the observation. Combined with Target, this forms
+             a unique key to the observation, assuming that most unique parameters
+             are invariant over a single observing night.
+    FluxCalibration - This is a flag that determines whether the observation
+             is to be processed to produce a system response (e.g. the target
+             has a well defined spectrum) or if the calibrated spectrum is
+             produced using a system spectral response function.
+             
+INPUT FILES:
+    PlotParameters - List of plotting configuration info related only to the target,
+             not the specific observation
+    NNNNKeyFile.txt - List of Target-Date-Time keys
+    ProcessingConfigFile.txt - Four parameters that control processing
+    FileList - List of individual FITS files for processing
+    ObsBands - List of spectral bands for which equiv. widths will be calculated
+    ReferenceSpectrum - This may be a canonical reference, e.g., for a stellar
+             spectral type for response computation, or it may be a response
+             file
+    FITS Images - 2D image files with necessary metadata for flux and wavelength
+             calibration            
+             
+OUTPUTS:
+    1D Spectrum - txt file
+    1D Spectrum - png file
+    1D Response or Albedo - txt file; depends on FluxCalibration flag - TBD 6/6/16
+    Equivalent widths - txt file
+
+NEXT STEPS as of 6/8/2016: (Need to verify which of these have been done)
+1) Adapt this code to work multiple observations of Neptune in a single file list file.
+2) Run through Neptune observations for the 2015-11-08UT and add keywords for processing
+3) Close out raw and calibrated files for 11/08 so they can be zipped
+4) Encapsulate target selection and associated file location meta data in
+   text files and/or a python function
+5) Bigger job: Make decisions on configuring EW parameters: Maybe as metadata in FITS files?
+6) Make this so it full accommodates emission and reflected spectra, e.g., 
+   for stars versus planets.
+7) Make this so that the EWs can be calculated for either (or both?) albedo
+   and/or total spectrum
+8) Make smoothing of reference spectrum configurable (maybe in ProcessingConfig)
+9) Provide options so that individual filter transmission can be assessed, e.g.,
+   merge the Jovian Moons filter response code
+10) Start using GIT?
+11) Convert many functions to classes
+12) Work on inheritance
 """
+
 import sys
-sys.path.append('g:\\Astronomy\Python Play')
+sys.path.append('f:\\Astronomy\Python Play')
 import matplotlib.pyplot as pl
 import pylab
 import numpy as np
@@ -14,23 +78,22 @@ import scipy
 from copy import deepcopy
 import ComputeEW
 
-# SKIP PANDAS!!!
-
+datapath="f:/Astronomy/Projects/Planets/Saturn/Spectral Data/"
 # Read and reshape spectral data files    
-INT = scipy.fromfile(file="Data/Titan-UnNorm-Cropped.dat", dtype=float, count=-1, sep='\t')    
+INT = scipy.fromfile(file=datapath+"1D Spectra/Titan-UnNorm-Cropped.dat", dtype=float, count=-1, sep='\t')    
 INT=scipy.reshape(INT,[INT.size/2,2])
 INT[:,1]=INT[:,1]/10. #Version of data read was 10x actual data values
-NativeDispersion=(INT[(INT.size/2.-1),0]-INT[0,0])/(INT.size/2.-1.)
+NativeDispersion=(INT[(INT.size/2-1),0]-INT[0,0])/(INT.size/2-1)
 
 NormResponsewithWV= scipy.fromfile(file="VegaResponse20130921UT.txt", dtype=float, count=-1, sep=" ")
 NRespWV=scipy.reshape(NormResponsewithWV,[NormResponsewithWV.size/2,2])
 
-SaturnRNG_20130612UT = scipy.fromfile(file="../../Saturn Project 2013/Spectroscopy/SaturnRNGSpectrum20130612UT.txt", dtype=float, count=-1, sep='\t')    
+SaturnRNG_20130612UT = scipy.fromfile(file=datapath+"SaturnTitanSpectralAnalysis/SaturnRNGSpectrum20130612UT.txt", dtype=float, count=-1, sep='\t')    
 SaturnRNG_20130612UT=scipy.reshape(SaturnRNG_20130612UT,[SaturnRNG_20130612UT.size/2,2])
 
 #Load Reference Spectrum: Average G2v for albedo calculations
-Ref = scipy.loadtxt("g:/Astronomy/Projects/SpectralReferenceFiles/ReferenceLibrary/g2v.dat", dtype=float, skiprows=3,usecols=(0,1))
-MasterDispersion=(Ref[(Ref.size/2.-1),0]-Ref[0,0])/(Ref.size/2.-1.)
+Ref = scipy.loadtxt("f:/Astronomy/Python Play/SPLibraries/SpectralReferenceFiles/ReferenceLibrary/g2v.dat", dtype=float, skiprows=3,usecols=(0,1))
+MasterDispersion=(Ref[(Ref.size/2-1),0]-Ref[0,0])/(Ref.size/2-1)
 
 #Interpolate NIR, Response and Reference spectra onto Reference Wavelengths
 
