@@ -69,10 +69,16 @@ Bands.load_records()
 
 MASTER[:,0]=MASTER[:,0]/10.
 
+Key="Saturn20140629021500UT"
+DateTime=datetime.datetime.strptime(Key[6:10]+"-"+Key[10:12]+"-" \
+        +Key[12:14]+"T"+Key[14:16]+":"+Key[16:18]+":"+Key[18:20], \
+        '%Y-%m-%dT%H:%M:%S')
+
 EWFN="SaturnEW20140629UT.txt"
 flag=False
 for B in range(0,len(Bands.ID)):
-    Temp=EWU.ComputeEW(MASTER,Bands.ID[B],Bands.WV0[B],Bands.WV1[B],Bands.WVCont[B],EWFN,flag)
+    Temp=EWU.ComputeEW1(MASTER,"Saturn",DateTime,Bands.Type[B],Bands.ID[B],
+                        Bands.WV0[B],Bands.WV1[B],Bands.WVCont[B],EWFN,flag)
     flag=True
 
 NativeDispersionNM=NativeDispersion/10.
