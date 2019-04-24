@@ -97,14 +97,14 @@ MASTER[:,1]=MeanAlbedo[:,1]
 np.savetxt("Saturn_Mean_Albedo_20180913UT"+"_1D.txt",MASTER,delimiter=" ",fmt="%10.3F %10.7F")
 ########################
 Bands=EWU.LinesBands_to_Measure("Saturn_ObsBands_135mm100lpm.txt")
-Bands.load_records(WVRange=[350.,750.])
+Bands.load_records(Type="Planetary",WVRange=[350.,750.])
 
 Key="Saturn20180913021500UT"
 DateTime=datetime.datetime.strptime(Key[6:10]+"-"+Key[10:12]+"-" \
         +Key[12:14]+"T"+Key[14:16]+":"+Key[16:18]+":"+Key[18:20], \
         '%Y-%m-%dT%H:%M:%S')
 
-EWFN="SaturnEW20180913UT.txt"
+EWFN="SaturnEW20180913UT-Albedo-EW.txt"
 flag=False
 for B in range(0,len(Bands.ID)):
     Temp=EWU.ComputeEW1(MASTER,"Saturn",DateTime,Bands.Type[B],Bands.ID[B],

@@ -12,6 +12,7 @@ import numpy as np
 import scipy
 from scipy import interpolate
 from copy import deepcopy
+import EquivWidthUtils as EWU
 
 Saturn_1996UT = scipy.fromfile(file="f:/Astronomy/Projects/Planets/Saturn/PROJECT/SAT7S.DAT", dtype=float, count=-1, sep='\t')    
 Saturn_1996UT=scipy.reshape(Saturn_1996UT,[Saturn_1996UT.size/2,2])
@@ -34,11 +35,11 @@ SaturnINT_20180913UT=scipy.reshape(SaturnINT_20180913UT,[SaturnINT_20180913UT.si
 Saturn2018SlopeCorrection=np.linspace(1.3,0.8,SaturnINT_20180913UT.size/2)
 SaturnINT_20180913UT[:,1]=SaturnINT_20180913UT[:,1]*Saturn2018SlopeCorrection
 
+#Load comparison albedo spectrum from Karkoschka, 1994 (1993 observations)
 Saturn_Karkoschka1993 = scipy.fromfile(file="f:/Astronomy/Projects/Planets/Saturn/Spectral Data/Karkoschka/1993.tab.txt", dtype=float, count=-1, sep=" ")    
 Saturn_Karkoschka1993=scipy.reshape(Saturn_Karkoschka1993,[Saturn_Karkoschka1993.size/8,8])
-
 Saturn_KarkRef1993=np.zeros((Saturn_Karkoschka1993.size/8,2))
-Saturn_KarkRef1993[:,0]=Saturn_Karkoschka1993[:,0]*10.
+Saturn_KarkRef1993[:,0]=Saturn_Karkoschka1993[:,0]
 Saturn_KarkRef1993[:,1]=Saturn_Karkoschka1993[:,4]
 print "***Saturn_KarkRef1993***", Saturn_KarkRef1993
 
@@ -121,7 +122,7 @@ pl.plot(Saturn2014Smth[:,0]/10.,Saturn2014Smth[:,1]*0.59,label='2014 Smooth',lin
 pl.scatter(Saturn_1996UT[:,0]/10.,Saturn_1996UT[:,1]*0.63,label='Saturn_1996UT',marker='.',s=0.1,color='r')
 pl.plot((Saturn_1996UT[:,0])/10.,Saturn_1996Smooth*0.63,label='Saturn_1996UT-Smth',color='r',linewidth=1.0)
 
-pl.plot(Saturn_KarkRef1993[:,0]/10.,Saturn_KarkRef1993[:,1],label='Karkoschka, 1994',linewidth=1,color='0.5')
+pl.plot(Saturn_KarkRef1993[:,0],Saturn_KarkRef1993[:,1],label='Karkoschka, 1994',linewidth=1,color='0.5')
 
 LineWVs=np.array([486.0,543.0,576.0,  #H I Balmer
                   597.0,619.0,668.0,683.0,705.0,725.0,
@@ -153,3 +154,14 @@ pl.subplots_adjust(left=0.08, bottom=0.12, right=0.98, top=0.92,
                 wspace=None, hspace=None)
                 
 pylab.savefig('SaturnAlbedoAllYears.png',dpi=300)
+
+
+Bands=EWU.LinesBands_to_Measure("Saturn_ObsBands_135mm100lpm.txt")
+Bands.load_records(Type="Planetary")
+
+EWFN="Saturn-Karkoschka-Albedo-EW.txt"
+flag=False
+for B in range(0,len(Bands.ID)):
+    Temp=EWU.ComputeEW1(Saturn_KarkRef1993,"Saturn",DateTime,Bands.Type[B],Bands.ID[B],
+                        Bands.WV0[B],Bands.WV1[B],Bands.WVCont[B],EWFN,flag)
+    flag=True

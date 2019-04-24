@@ -66,6 +66,8 @@ MASTER[DedicatedCLRIndices,1]= CLRonRef[DedicatedCLRIndices]
 #Compute EWs for telluric bands from MASTER
 Bands=EWU.LinesBands_to_Measure("Saturn_ObsBands_135mm100lpm.txt")
 Bands.load_records()
+AlbedoBands=EWU.LinesBands_to_Measure("Saturn_ObsBands_135mm100lpm.txt")
+AlbedoBands.load_records(Type="Planetary")
 
 MASTER[:,0]=MASTER[:,0]/10.
 
@@ -74,7 +76,7 @@ DateTime=datetime.datetime.strptime(Key[6:10]+"-"+Key[10:12]+"-" \
         +Key[12:14]+"T"+Key[14:16]+":"+Key[16:18]+":"+Key[18:20], \
         '%Y-%m-%dT%H:%M:%S')
 
-EWFN="SaturnEW20140629UT.txt"
+EWFN="Saturn20140629UT-RawFlux-EW.txt"
 flag=False
 for B in range(0,len(Bands.ID)):
     Temp=EWU.ComputeEW1(MASTER,"Saturn",DateTime,Bands.Type[B],Bands.ID[B],
@@ -105,6 +107,14 @@ NormAlbedowithWV=deepcopy(Ref)
 NormAlbedowithWV[:,1]=NormAlbedo
 np.savetxt("SaturnAlbedo20140629UT.txt",NormAlbedowithWV,delimiter=" ",fmt="%10.3F %10.7F")
 #Begin plotting 
+
+EWFN="Saturn20140629UT-Albedo-EW.txt"
+flag=False
+for B in range(0,len(AlbedoBands.ID)):
+    Temp=EWU.ComputeEW1(MASTER,"Saturn",DateTime,AlbedoBands.Type[B],AlbedoBands.ID[B],
+                        AlbedoBands.WV0[B],AlbedoBands.WV1[B],AlbedoBands.WVCont[B],EWFN,flag)
+    flag=True
+
 
 pl.figure(figsize=(6.5, 2.5), dpi=150, facecolor="white")
 
